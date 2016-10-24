@@ -16,6 +16,7 @@ from sklearn import grid_search
 from sklearn import linear_model
 from sklearn.svm import SVR
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.neural_network import MLPRegressor
 
 print("Formatting data")
 
@@ -48,7 +49,7 @@ Xencode = categorical_encoder.transform(X);
 Xencode_test = categorical_encoder.transform(X_test);
 
 print("Classification bench")
-cv = ShuffleSplit(y.size,test_size=0.3) # cross-validation set
+cv = ShuffleSplit(y.size,n_iter=1,test_size=0.3) # cross-validation set
 results = [];
 verbose = 2
 
@@ -103,8 +104,17 @@ results.append(['Support Vector Regression',grid.grid_scores_,grid.scorer_,grid.
 
 print("* Random Forest Regressor")
 cl = RandomForestRegressor()
-param_grid = {'max_features',['auto']}
+param_grid = {'max_features':['auto']}
 grid = grid_search.GridSearchCV(cl,param_grid,cv=cv,verbose=verbose)
 grid.fit(Xencode,y)
 ytest = grid.best_estimator_.predict(Xencode_test)
 results.append(['Random Forest Regression',grid.grid_scores_,grid.scorer_,grid.best_score_,grid.best_params_,ytest,""])
+
+print("* Multi Layer Perceptron Regressor")
+cl = MLPRegressor(hidden_layer_sizes=(600),verbose=True)
+param_grid = {'learning_rate_init':[0.01]}
+grid = grid_search.GridSearchCV(cl,param_grid,cv=cv,verbose=verbose)
+grid.fit(Xencode,y)
+ytest = grid.best_estimator_.predict(Xencode_test)
+results.append(['Multi Layer Perceptron Regression',grid.grid_scores_,grid.scorer_,grid.best_score_,grid.best_params_,ytest,""])
+
