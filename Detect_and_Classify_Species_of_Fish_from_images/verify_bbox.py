@@ -11,7 +11,7 @@ for l in labels:
         filename = f['filename'];
         annotations = f['annotations']
         classe = f['class']
-        image = cv2.imread(l.upper()+'/'+filename,-1);
+        image = cv2.imread('train/'+l.upper()+'/'+filename,-1);
         image_mask = np.zeros_like(image);
         for a in annotations:
             x = int(a['x'])
@@ -23,8 +23,8 @@ for l in labels:
             c = a['class']
             cv2.rectangle(image,(x,y),(x+w,y+h),(0,0,255),3)
             cv2.rectangle(image_mask,(x,y),(x+w,y+h),(255,255,255),thickness=cv2.cv.CV_FILLED)
-        cv2.imwrite(l.upper()+'/'+filename+'_gt.jpg',image);
-        cv2.imwrite(l.upper()+'/'+filename+'_m.jpg',image_mask.astype(np.uint8));
+        cv2.imwrite('train/'+l.upper()+'/'+filename+'_gt.jpg',image);
+        cv2.imwrite('train/'+l.upper()+'/'+filename+'_m.jpg',image_mask.astype(np.uint8));
 
 
 
