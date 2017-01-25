@@ -1,2 +1,2 @@
-Detect_and_Classify_Species_of_Fish_from_images/train/*.jpg
-Detect_and_Classify_Species_of_Fish_from_images/test_stg1/*.jpg
+Detect_and_Classify_Species_of_Fish_from_images/train/**/*.jpg
+Detect_and_Classify_Species_of_Fish_from_images/test_stg1/**/*.jpg
