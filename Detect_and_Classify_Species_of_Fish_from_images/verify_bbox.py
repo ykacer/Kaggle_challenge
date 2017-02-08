@@ -135,6 +135,7 @@ with open(features_file,'a') as csvfile:
 				chunk[(count_samples-1)%chunk_size] = fi;
 				if (count_samples-1)%chunk_size == (chunk_size-1):
 					pd.DataFrame(chunk).to_csv(csvfile,header=False,index=False);
+	pd.DataFrame(chunk[:(count_samples)%chunk_size]).to_csv(csvfile,header=False,index=False);
 
 csvfile.close();
 
