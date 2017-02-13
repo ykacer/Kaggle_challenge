@@ -14,7 +14,7 @@ import cv2
 
 labels = ['ALB','BET','DOL','LAG','OTHER','SHARK','YFT','NoF']
 
-main_path = 'rcnn/TheNatureConservancy/Kaggle2017/' 
+main_path = 'rcnn/data/Kaggle2017/TheNatureConservancy2017/' 
 annotation_path = main_path+'/Annotations/'
 imagesets_path = main_path+'/ImageSets/'
 jpegimages_path = main_path+'/JPEGImages/'
@@ -28,14 +28,14 @@ try:
     os.mkdir(annotation_path)
     os.mkdir(imagesets_path)
     os.mkdir(jpegimages_path)
-    os.mkdir(imagesets_path+'/Layout')
+    os.mkdir(imagesets_path+'/Main')
 except:
     pass
 
-train_set_file = open(imagesets_path+'Layout/train.txt','w')
-val_set_file = open(imagesets_path+'Layout/val.txt','w')
-trainval_set_file = open(imagesets_path+'Layout/trainval.txt','w')
-test_set_file = open(imagesets_path+'Layout/test.txt','w')
+train_set_file = open(imagesets_path+'Main/train.txt','w')
+val_set_file = open(imagesets_path+'Main/val.txt','w')
+trainval_set_file = open(imagesets_path+'Main/trainval.txt','w')
+test_set_file = open(imagesets_path+'Main/test.txt','w')
 
 folder = 'Kaggle_Fish'
 source = {}
