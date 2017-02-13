@@ -85,13 +85,13 @@ for l in labels:
 	}
 
         if count%3 == 0:
-            train_set_file.write(filename+'\n')
-            trainval_set_file.write(filename+'\n')
+            train_set_file.write(filename[:-4]+'\n')
+            trainval_set_file.write(filename[:-4]+'\n')
         elif count%3 == 1:
-            val_set_file.write(filename+'\n')
-            trainval_set_file.write(filename+'\n')
+            val_set_file.write(filename[:-4]+'\n')
+            trainval_set_file.write(filename[:-4]+'\n')
         else:
-            test_set_file.write(filename+'\n')
+            test_set_file.write(filename[:-4]+'\n')
         count = count+1;
         if 'annotations' in f.keys():
 		annotations = f['annotations']
