@@ -14,21 +14,19 @@ import cv2
 
 labels = ['ALB','BET','DOL','LAG','OTHER','SHARK','YFT','NoF']
 
-main_path = 'rcnn/data/Kaggle2017/TheNatureConservancy2017/' 
+main_path = '/home/kyoucef/py-faster-rcnn/data/Kaggle2017/TheNatureConservancy2017/' 
 annotation_path = main_path+'/Annotations/'
 imagesets_path = main_path+'/ImageSets/'
 jpegimages_path = main_path+'/JPEGImages/'
 
 if os.path.isdir(main_path):
     os.system('rm -rf '+main_path)
-
 try:
     os.system('mkdir -p '+main_path)
     os.system('sleep 5')
     os.mkdir(annotation_path)
-    os.mkdir(imagesets_path)
     os.mkdir(jpegimages_path)
-    os.mkdir(imagesets_path+'/Main')
+    os.system('mkdir -p '+imagesets_path+'/Main')
 except:
     pass
 
@@ -103,6 +101,10 @@ for l in labels:
 			y = y-y*(y<0)
 			h = int(a['height'])
 			w = int(a['width'])
+                        if (x+w)>=width:
+                            w = width-1-x
+                        if (y+h)>=height:
+                            h = height-1-y
 			c = a['class']
 		        t = 0
 		        if (x==1) | (y==1):
