@@ -52,9 +52,16 @@ def prune_keypoints_cluster(kp,des):
 	
 labels = ['alb','bet','dol','lag','other','shark','yft']
 
+descriptor_type = 'surf'
+if descriptor_type == 'sift':
+	descriptor_extractor = cv2.SIFT(nOctaveLayers=4,contrastThreshold=0.02,edgeThreshold=10,sigma=2.1);
+	#descriptor_extractor = cv2.SIFT(nOctaveLayers=4,contrastThreshold=0.02,edgeThreshold=20,sigma=1.2)		
+else:
+	descriptor_extractor = cv2.SURF(HessianThreshold=1000,nOctavesLayers=4)
+	
 nof_features = dict();
 nof_features_pruned = dict();
-features_file = 'sift_features.csv';
+features_file = descriptor_type+'_features.csv';
 try:
 	os.remove(features_file);
 except:
@@ -67,12 +74,13 @@ chunk_size = 100;
 chunk = np.zeros((chunk_size,),dtype=dtype);
 
 count_samples = 0;
+margin = 7;
 with open(features_file,'a') as csvfile:
 	writer = csv.writer(csvfile);
 	writer.writerow(header);
 	for l in labels:
 	    print l.upper()+'...'
-	    files = json.load(open(l+'_labels.json'));
+	    files = json.load(open('annotations/'+l+'_labels.json'));
 	    try:
 		os.mkdir('train/'+l.upper()+'/crop/')
 	    except:
@@ -88,12 +96,12 @@ with open(features_file,'a') as csvfile:
 		image_mask = np.zeros_like(image);
 		anno_counter = 0;
 		for a in annotations:
-			x = int(a['x'])
+			x = int(a['x'])-margin
 			x = x-x*(x<0)
-			y = int(a['y'])
+			y = int(a['y'])-margin
 			y = y-y*(y<0)
-			h = int(a['height'])
-			w = int(a['width'])
+			h = int(a['height'])+margin
+			w = int(a['width'])+margin
 			c = a['class']
 			crop = image[y:y+h,x:x+w,:];
 			name = 'train/'+l.upper()+'/crop/'+filename[:-4]+'_'+str(anno_counter)+'.jpg'
@@ -102,17 +110,17 @@ with open(features_file,'a') as csvfile:
 			cv2.rectangle(image_mask,(x,y),(x+w,y+h),(255,255,255),thickness=cv2.cv.CV_FILLED)
 			success = cv2.imwrite('train/'+l.upper()+'/'+filename[:-4]+'_gt.jpg',image_drawing);
 			success = cv2.imwrite('train/'+l.upper()+'/'+filename[:-4]+'_m.jpg',image_mask.astype(np.uint8));
-			# compute SIFT keypoint and feature
+			# compute descriptor keypoint and feature
 			## get gray image
 			gray = cv2.cvtColor(cv2.imread('train/'+l.upper()+'/crop/'+filename[:-4]+'_'+str(anno_counter)+'.jpg',-1),cv2.COLOR_BGR2GRAY);
-			## instantiate and call SIFT extractor
-			# sift = cv2.SIFT(nOctaveLayers=4,contrastThreshold=0.02,edgeThreshold=10,sigma=2.1);
-			sift = cv2.SIFT(nOctaveLayers=4,contrastThreshold=0.02,edgeThreshold=20,sigma=1.2)		
-			kp,des = sift.detectAndCompute(gray,None);
-			## draw SIFT keypoints
+			## call descriptor extractor
+			kp,des = descriptor_extractor.detectAndCompute(gray,None);
+			if kp == []:
+				continue
+			## draw keypoints
 			gray_kp = cv2.drawKeypoints(gray,kp,gray,flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS);
-			success = cv2.imwrite('train/'+l.upper()+'/crop/'+filename[:-4]+'_'+str(anno_counter)+'_siftkp.jpg',gray_kp);
-			## prune and redraw SIFT keypoints
+			success = cv2.imwrite('train/'+l.upper()+'/crop/'+filename[:-4]+'_'+str(anno_counter)+'_'+descriptor_type+'kp.jpg',gray_kp);
+			## prune and redraw keypoints
 			kp_pruned = kp;
 			des_pruned = des;
 			#kp_pruned,des_pruned = prune_keypoints(kp,des);
@@ -121,13 +129,13 @@ with open(features_file,'a') as csvfile:
 			#else:
 			#	kp_pruned = kp; des_pruned = des;
 			gray_kp_pruned = cv2.drawKeypoints(gray,kp_pruned,gray,flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS);
-			success = cv2.imwrite('train/'+l.upper()+'/crop/'+filename[:-4]+'_'+str(anno_counter)+'_siftkp_pruned.jpg',gray_kp_pruned);
+			success = cv2.imwrite('train/'+l.upper()+'/crop/'+filename[:-4]+'_'+str(anno_counter)+'_'+descriptor_type+'kp_pruned.jpg',gray_kp_pruned);
 			#if len(kp)>2000:
-			#	success = cv2.imwrite('train/'+l.upper()+'/crop/pruned/'+filename[:-4]+'_'+str(anno_counter)+'_siftkp.jpg',gray_kp);
-			#	success = cv2.imwrite('train/'+l.upper()+'/crop/pruned/'+filename[:-4]+'_'+str(anno_counter)+'_siftkp_pruned.jpg',gray_kp_pruned);
+			#	success = cv2.imwrite('train/'+l.upper()+'/crop/pruned/'+filename[:-4]+'_'+str(anno_counter)+'_'+descriptor_type+'kp.jpg',gray_kp);
+			#	success = cv2.imwrite('train/'+l.upper()+'/crop/pruned/'+filename[:-4]+'_'+str(anno_counter)+'_'+descriptor_type+'kp_pruned.jpg',gray_kp_pruned);
 			## count number of features per image
-			nof_features['train/'+l.upper()+'/crop/'+filename[:-4]+'_'+str(anno_counter)+'_siftkp.jpg']=len(kp);
-			nof_features_pruned['train/'+l.upper()+'/crop/'+filename[:-4]+'_'+str(anno_counter)+'_siftkp_pruned.jpg']=len(kp_pruned);
+			nof_features['train/'+l.upper()+'/crop/'+filename[:-4]+'_'+str(anno_counter)+'_'+descriptor_type+'kp.jpg']=len(kp);
+			nof_features_pruned['train/'+l.upper()+'/crop/'+filename[:-4]+'_'+str(anno_counter)+'_'+descriptor_type+'kp_pruned.jpg']=len(kp_pruned);
 			anno_counter = anno_counter+1
 			for ki,di in izip(kp_pruned,des_pruned):
 				count_samples = count_samples + 1;
