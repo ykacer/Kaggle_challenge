@@ -57,7 +57,7 @@ if descriptor_type == 'sift':
 	descriptor_extractor = cv2.SIFT(nOctaveLayers=4,contrastThreshold=0.02,edgeThreshold=10,sigma=2.1);
 	#descriptor_extractor = cv2.SIFT(nOctaveLayers=4,contrastThreshold=0.02,edgeThreshold=20,sigma=1.2)		
 else:
-	descriptor_extractor = cv2.SURF(HessianThreshold=1000,nOctavesLayers=4)
+	descriptor_extractor = cv2.SURF(hessianThreshold=200)
 	
 nof_features = dict();
 nof_features_pruned = dict();
