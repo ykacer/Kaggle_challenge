@@ -96,15 +96,15 @@ for l in labels:
 		objects = []
 		for a in annotations:
 			x = int(a['x'])
-			x = x-x*(x<0)
+			x = x-x*(x<0)+1
 			y = int(a['y'])
-			y = y-y*(y<0)
+			y = y-y*(y<0)+1
 			h = int(a['height'])
 			w = int(a['width'])
-                        if (x+w)>=width:
-                            w = width-1-x
-                        if (y+h)>=height:
-                            h = height-1-y
+                        if (x+w)>=width-1:
+                            w = width-1-x-1
+                        if (y+h)>=height-1:
+                            h = height-1-y-1
 			c = a['class']
 		        t = 0
 		        if (x==1) | (y==1):
