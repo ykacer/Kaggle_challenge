@@ -54,10 +54,11 @@ labels = ['alb','bet','dol','lag','other','shark','yft']
 
 descriptor_type = 'surf'
 if descriptor_type == 'sift':
-	descriptor_extractor = cv2.SIFT(nOctaveLayers=4,contrastThreshold=0.02,edgeThreshold=10,sigma=2.1);
-	#descriptor_extractor = cv2.SIFT(nOctaveLayers=4,contrastThreshold=0.02,edgeThreshold=20,sigma=1.2)		
+	#descriptor_extractor = cv2.SIFT(nOctaveLayers=4,contrastThreshold=0.02,edgeThreshold=10,sigma=2.1);
+	#descriptor_extractor = cv2.SIFT(nOctaveLayers=4,contrastThreshold=0.02,edgeThreshold=20,sigma=1.2);
+	descriptor_extractor = cv2.SIFT(nOctaveLayers=5,contrastThreshold=0.12,edgeThreshold=80,sigma=0.6);
 else:
-	descriptor_extractor = cv2.SURF(hessianThreshold=200)
+	descriptor_extractor = cv2.SURF(hessianThreshold=50)
 	
 nof_features = dict();
 nof_features_pruned = dict();
@@ -74,7 +75,7 @@ chunk_size = 100;
 chunk = np.zeros((chunk_size,),dtype=dtype);
 
 count_samples = 0;
-margin = 7;
+margin = 15;
 with open(features_file,'a') as csvfile:
 	writer = csv.writer(csvfile);
 	writer.writerow(header);
@@ -139,7 +140,11 @@ with open(features_file,'a') as csvfile:
 			anno_counter = anno_counter+1
 			for ki,di in izip(kp_pruned,des_pruned):
 				count_samples = count_samples + 1;
-				fi = tuple([count_samples-1,name,ki.octave,ki.pt[0],ki.pt[1],ki.response,ki.size,ki.angle]+di.tolist()+[l.upper()]);
+				if descriptor_type == 'sift':
+					octavei = ki.octave & 0xFF
+				else:
+					octavei = ki.octave
+				fi = tuple([count_samples-1,name,octavei,ki.pt[0],ki.pt[1],ki.response,ki.size,ki.angle]+di.tolist()+[l.upper()]);
 				chunk[(count_samples-1)%chunk_size] = fi;
 				if (count_samples-1)%chunk_size == (chunk_size-1):
 					pd.DataFrame(chunk).to_csv(csvfile,header=False,index=False);
