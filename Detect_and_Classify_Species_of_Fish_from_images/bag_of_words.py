@@ -1,3 +1,4 @@
+import sys
 import cv2
 import numpy as np
 import os
@@ -17,6 +18,9 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import GradientBoostingClassifier
 
 from sklearn.externals import joblib
+
+#dictionarySize = int(sys.argv[1])
+dictionarySize = 1024
 
 def gen_chunks(reader, chunksize=100):
     """
@@ -48,7 +52,7 @@ descriptor_type = 'surf'
 descriptors_file = descriptor_type+'_features.csv'
 
 # number of words (number of clusters during descriptors clustering)
-dictionarySize = 1024;
+dictionarySize = 512;
 bow = cv2.BOWKMeansTrainer(dictionarySize)
 
 # get number of descriptors to instanciate descriptors array
@@ -78,14 +82,15 @@ for im,l in izip(image_names,labels):
 
 # cluster descriptors
 dictionary = bow.cluster(features.astype(np.float32))
-joblib.dump((dictionary), 'dico_'+descriptor_type+'_bow.pkl', compress=3)
+joblib.dump((dictionary), 'dico_'+descriptor_type+'_bow'+str(dictionarySize)+'.pkl', compress=3)
 # instanciate feature extractor structure (with same parameters as those used to create descriptors_file)
 # and then perform bag-of-words feature extractor
-# sift = cv2.SIFT(nOctaveLayers=4,contrastThreshold=0.02,edgeThreshold=20,sigma=1.2)
 if descriptor_type == 'sift':
-	descriptor_extractor = cv2.SIFT(nOctaveLayers=4,contrastThreshold=0.02,edgeThreshold=10,sigma=2.1)
+	#descriptor_extractor = cv2.SIFT(nOctaveLayers=4,contrastThreshold=0.02,edgeThreshold=20,sigma=1.2);
+	#descriptor_extractor = cv2.SIFT(nOctaveLayers=4,contrastThreshold=0.02,edgeThreshold=10,sigma=2.1)
+	descriptor_extractor = cv2.SIFT(nOctaveLayers=5,contrastThreshold=0.12,edgeThreshold=80,sigma=0.6);
 else:
-	descriptor_extractor = cv2.SURF(200)
+	descriptor_extractor = cv2.SURF(50)
 
 #FLANN_INDEX_KDTREE = 0
 #index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
@@ -115,9 +120,9 @@ for ind,im in enumerate(set_images):
 	X[ind,:] = bowExtractor.compute(gray,descriptor_extractor.detect(gray))
 
 # record bow features and labels
-bow_features = descriptor_type+'_bow_features.csv'
+bow_features = descriptor_type+'_bow_features'+str(dictionarySize)+'.csv'
 pd.DataFrame(X).to_csv(bow_features)
-bow_labels = descriptor_type+'_bow_labels.csv'
+bow_labels = descriptor_type+'_bow_labels'+str(dictionarySize)+'.csv'
 pd.DataFrame(y).to_csv(bow_labels)
 
 # Classification
@@ -154,9 +159,14 @@ cl = LogisticRegression(C=100.0,class_weight=class_weight,random_state=0)
 cl.fit(Xtrain_r,ytrain)
 print np.array_str(metrics.confusion_matrix(ytest,cl.predict(Xtest_r)))
 
-cl = MLPClassifier(hidden_layer_sizes=(2000,500),solver='sgd',activation='relu', batch_size='auto',learning_rate_init=0.1,learning_rate='constant',max_iter=400,random_state=0,tol=0.01,momentum=0.9,nesterovs_momentum=True,early_stopping=True,verbose=True)
+cl = MLPClassifier(hidden_layer_sizes=(2000,500),solver='sgd',activation='relu', batch_size='auto',learning_rate_init=0.1,learning_rate='constant',max_iter=400,random_state=0,tol=0.01,momentum=0.9,nesterovs_momentum=True,early_stopping=True,class_weight=class_weight,verbose=True)
 cl.fit(Xtrain_r,ytrain)
 print np.array_str(metrics.confusion_matrix(ytest,cl.predict(Xtest_r)))
+
+cl = MLPClassifier(hidden_layer_sizes=(2000,),solver='sgd',activation='relu', batch_size='auto',learning_rate_init=0.01,learning_rate='constant',max_iter=400,random_state=0,tol=0.001,momentum=0.9,nesterovs_momentum=True,early_stopping=True,verbose=True)
+cl.fit(Xtrain_r,ytrain)
+print np.array_str(metrics.confusion_matrix(ytest,cl.predict(Xtest_r)))
+
 
 cl = GradientBoostingClassifier(learning_rate=0.01, n_estimators=800,max_depth=24, min_samples_split=160, min_samples_leaf=5, subsample=0.8, max_features=11, random_state=0)
 cl.fit(Xtrain_r,ytrain)
